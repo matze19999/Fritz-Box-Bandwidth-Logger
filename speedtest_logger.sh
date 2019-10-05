@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Fritz!Box Bandwidth Logger
+
+# Geschrieben von
+# Matthias Pröll <proell.matthias@gmail.com>
+# Letzte Anpassung: 2019/10/05
+
+# Variables
 # How often should the speedtest run? waittime in seconds.
 WAITTIME=5
 
