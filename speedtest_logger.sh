@@ -31,7 +31,7 @@ if [ $? == 1 ];then
 	apt install curl bc wget grep awk sed -y  > /dev/null
 fi
 
-test if speedtest-csv is installed
+# Test if speedtest-csv is installed
 if [ ! -f "/usr/bin/speedtest-csv" ];then
 	wget -q https://raw.githubusercontent.com/HenrikBengtsson/speedtest-cli-extras/master/bin/speedtest-csv -O /usr/bin/speedtest-csv
 	chmod +x /usr/bin/speedtest-csv
