@@ -24,7 +24,7 @@ ERROR=0
 
 # Test if speedtests.csv exists
 if [ ! -f "speedtests.csv" ];then
-	echo "Datum;Server;Ping;Download;Upload" >> speedtests.csv
+	echo "Date;Server;Ping;Download;Upload" >> speedtests.csv
 fi
 
 # Test is all needed packages are installed
