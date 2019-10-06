@@ -19,6 +19,9 @@ BoxIP="fritz.box" # 192.168.178.1
 BoxUSER="USER" # Create a user in System > User on your Fritz!Box
 BoxPW="PASSWORT"
 
+# DONT TOUCH
+ERROR=0
+
 # Test if speedtests.csv exists
 if [ ! -f "speedtests.csv" ];then
 	echo "Datum;Server;Ping;Download;Upload" >> speedtests.csv
@@ -49,10 +52,17 @@ aborted=0
 while sleep $WAITTIME; do
 	clear
 	echo Fritz!Box Speedometer
-    echo Successful run: $RUNnumber
+  	echo Successful run: $RUNnumber
 	echo Aborted because of too high bandwidth usage: $aborted
 
 	DL=$(echo $BoxData | grep NewByteReceiveRate | cut -d ' ' -f 2)
+	if [ -z "$DL" ];then
+		date=$(date "+%Y-%m-%d %H:%M%S")
+		echo "No Internet Connection at $date" >> speedtests.csv
+		ERROR=1
+		echo "No Internet Connection!"
+		let RUNnumber++
+	fi
 	DL=$(($DL*8))
 	DL=$(bc -l <<< "$DL/1000000")
 	DL=$(echo $DL | cut -d '.' -f 1)
@@ -65,6 +75,15 @@ while sleep $WAITTIME; do
 	if [[ $DL < $DLimiter && $UL < $ULimiter ]]; then
 		let RUNnumber++
 		speedtest-csv --sep ';'  | cut -d ';' -f 1,5,7,8,9 >> speedtests.csv
+		let RUNnumber++
+		echo Speedtest is running....
+		result=$(speedtest-csv --sep ';'  | cut -d ';' -f 1,5,7,8,9)
+		if [ $? == 1 ]; then
+			date=$(date "+%Y-%m-%d %H:%M%S")
+			echo No Internet Connection at $date >> speedtests.csv
+		else
+			echo $result >> speedtests.csv
+		fi
 	else
 		let aborted++
 		echo
