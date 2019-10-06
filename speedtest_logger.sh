@@ -15,16 +15,28 @@ DLimiter=6
 ULimiter=4
 
 # Fritz!Box Access Data
-BoxIP="fritz.box" # 192.168.178.1
+BoxIP="fritz.box" # usually 192.168.178.1
 
 # Max number of entrys in speedtests.csv before it will be deleted
 MAXCSVLINES=1000
+
+
 
 # DONT TOUCH
 RUNnumber=0
 aborted=0
 ERROR=0
-PWD=$(pwd)
+PWD=`"pwd"`
+
+# Functions
+
+function convert() {
+        local number=$1
+		number=$(($number*8))
+		number=$(bc -l <<< "$number/1000000")
+		number=$(echo $number | cut -d '.' -f 1)
+		echo $number
+}
 
 # Test is all needed packages are installed
 which curl bc wget grep awk sed > /dev/null
@@ -43,12 +55,12 @@ fi
 location="/igdupnp/control/WANCommonIFC1"
 uri="urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1"
 action='GetAddonInfos'
-BoxData=$(curl -s -k -m 5 --anyauth  http://$BoxIP:49000$location -H 'Content-Type: text/xml; charset="utf-8"' -H "SoapAction:$uri#$action" -d "<?xml version='1.0' encoding='utf-8'?><s:Envelope s:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/' xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'><s:Body><u:$action xmlns:u='$uri'></u:$action></s:Body></s:Envelope>" | grep "<New" | awk -F"</" '{print $1}' |sed -En "s/<(.*)>(.*)/\1 \2/p")
+BoxData=`curl -s -k -m 5 --anyauth  http://$BoxIP:49000$location -H 'Content-Type: text/xml; charset="utf-8"' -H "SoapAction:$uri#$action" -d "<?xml version='1.0' encoding='utf-8'?><s:Envelope s:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/' xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'><s:Body><u:$action xmlns:u='$uri'></u:$action></s:Body></s:Envelope>" | grep "<New" | awk -F"</" '{print $1}' |sed -En "s/<(.*)>(.*)/\1 \2/p"`
 
 if [ -z "$BoxData" ];then
-		date=$(date "+%Y-%m-%d %H:%M%S")
+		date=`date "+%Y-%m-%d %H:%M%S"`
 		echo "Fritz!Box not reachable at $date" >> speedtests.csv
-		ERROR=1
+		ERROR=1	
 		echo "Fritz!Box not reachable!"
 		exit 1;
 	fi
@@ -65,30 +77,26 @@ while sleep $WAITTIME; do
   	echo Successful run: $RUNnumber
 	echo Aborted because of too high bandwidth usage: $aborted
 
-	DL=$(echo $BoxData | grep NewByteReceiveRate | cut -d ' ' -f 2)
+	DL=`echo $BoxData | grep NewByteReceiveRate | cut -d ' ' -f 2`
+	UL=`echo $BoxData | grep NewByteSendRate | cut -d ' ' -f 2`
 	if [ -z "$DL" ];then
-		date=$(date "+%Y-%m-%d %H:%M%S")
+		date=`date "+%Y-%m-%d %H:%M%S"`
 		echo "No Internet Connection at $date" >> speedtests.csv
 		ERROR=1
 		echo "No Internet Connection!"
 		let RUNnumber++
 	fi
-	DL=$(($DL*8))
-	DL=$(bc -l <<< "$DL/1000000")
-	DL=$(echo $DL | cut -d '.' -f 1)
 
-	UL=$(echo $BoxData | grep NewByteSendRate | cut -d ' ' -f 2)
-	UL=$(($UL*8))
-	UL=$(bc -l <<< "$UL/1000000")
-	UL=$(echo $UL | cut -d '.' -f 1)
+	DL=$(convert $DL)
+	UL=$(convert $UL)
 
 	if [[ $DL < $DLimiter && $UL < $ULimiter ]]; then
 		let RUNnumber++
 		speedtest-csv --sep ';'  | cut -d ';' -f 1,5,7,8,9 >> speedtests.csv
 		echo Speedtest is running....
-		result=$(speedtest-csv --sep ';'  | cut -d ';' -f 1,5,7,8,9)
+		result=`speedtest-csv --sep ';'  | cut -d ';' -f 1,5,7,8,9`
 		if [ $? == 1 ]; then
-			date=$(date "+%Y-%m-%d %H:%M%S")
+			date=`date "+%Y-%m-%d %H:%M%S"`
 			echo No Internet Connection at $date >> speedtests.csv
 		else
 			echo $result >> speedtests.csv
@@ -106,7 +114,7 @@ while sleep $WAITTIME; do
 	fi
 
 	# Check how many lines the speedtests.csv file has
-	CSVLINES=$(wc -l $PWD/speedtests.csv | cut -d ' ' -f 1)
+	CSVLINES=`wc -l $PWD/speedtests.csv | cut -d ' ' -f 1`
 	if [ "$MAXCSVLINES" -lt "$CSVLINES" ];then
 		rm -f "$PWD/speedtests.csv"
 	fi
