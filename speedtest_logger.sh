@@ -10,7 +10,7 @@
 # How often should the speedtest run? waittime in seconds.
 WAITTIME=5
 
-# How high is is the max. actual download and upload rate, without aborting the script?
+# How high is the max. actual download and upload rate, without aborting the script?
 DLimiter=6
 ULimiter=4
 
