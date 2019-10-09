@@ -8,24 +8,24 @@
 
 # Variables
 # How often should the speedtest run? waittime in seconds.
-WAITTIME=5
+WAITTIME="5"
 
 # How high is the max. actual download and upload rate, without aborting the script?
-DLimiter=6
-ULimiter=4
+DLimiter="6"
+ULimiter="4"
 
 # Fritz!Box Access Data
 BoxIP="fritz.box" # usually 192.168.178.1
 
 # Max number of entrys in speedtests.csv before it will be deleted
-MAXCSVLINES=1000
+MAXCSVLINES="1000"
 
 
 
 # DONT TOUCH
-RUNnumber=0
-aborted=0
-ERROR=0
+RUNnumber="0"
+aborted="0"
+ERROR="0"
 PWD=`"pwd"`
 
 # Functions
