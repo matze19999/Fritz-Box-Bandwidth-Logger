@@ -42,7 +42,7 @@ function convert() {
 which curl bc wget grep awk sed > /dev/null
 if [ $? == 1 ];then
 	apt update  > /dev/null
-	apt install curl bc wget grep awk sed -y  > /dev/null
+	apt install --no-install-recommends curl bc wget grep awk sed -y  > /dev/null
 fi
 
 # Test if speedtest-csv is installed
